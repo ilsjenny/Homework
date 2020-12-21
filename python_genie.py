@@ -1,3 +1,8 @@
+from pymongo import MongoClient  # pymongo를 임포트 하기(패키지 설치 먼저 해야겠죠?)
+
+client = MongoClient('localhost', 27017)  # mongoDB는 27017 포트로 돌아갑니다.
+db = client.dbsparta  # 'dbsparta'라는 이름의 db를 사용합니다. 'dbsparta' db가 없다면 새로 만듭니다.
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -12,7 +17,12 @@ soup = BeautifulSoup(data.text, 'html.parser')
 music = soup.select ('#body-content > div.newest-list > div > table > tbody > tr')
 
 for m in music:
-    rank = m.select_one('td.number')
-    song = m.select_one('td.info > a.title.ellipsis')
-    artist = m.select_one('td.info > a.artist.ellipsis')
-    print(rank.text[:2].strip(), song.text.lstrip(), artist.text)
+    rank = m.select_one('td.number').text[:2].strip()
+    song = m.select_one('td.info > a.title.ellipsis').text.lstrip()
+    artist = m.select_one('td.info > a.artist.ellipsis').text
+    dic = {
+        'rank': rank,
+        'song': song,
+        'artist': artist
+    }
+    db.music.insert_one(dic)
