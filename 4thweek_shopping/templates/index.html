@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>귤팔아요귤</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Song+Myung&display=swap" rel="stylesheet">
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <style>
+        * {
+            font-family: 'Song Myung', serif;
+        }
+
+        .image {
+            border-radius: 20px;
+            width: 220px;
+            height: 200px;
+        }
+
+
+        .center {
+            width: 550px;
+            margin: auto;
+        }
+
+        .imagecenter {
+            width: 550px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .smalltext {
+            font-size: 20px;
+        }
+
+        .centeralign {
+            text-align: center;
+        }
+
+
+        .redText {
+            color: #b70c0c;
+        }
+
+        .blueText {
+            color: #090994;
+        }
+    </style>
+    <script>
+
+        $(document).ready(function () {
+            $("#orderData").html("");
+            showOrder();
+        });
+
+        function blankAlert() {
+            let name = $("#inputEmail").val();
+            let count = $("#inputCount").val();
+            let address = $("#inputAddress").val();
+            let phone = $("#inputPhone").val();
+            if (name == '') {
+                alert("성함을 입력해주세요");
+                return;
+            } else if (count == null) {
+                alert("수량을 입력해주세요");
+                return false;
+            } else if (address == "") {
+                alert("주소를 입력해주세요");
+                return;
+            } else if (phone == "") {
+                alert("전화번호를 입력해주세요");
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {'name': name, 'count': count, 'address': address, 'phone': phone},
+                success: function (response) { // 성공하면
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        location.reload();
+                    }
+                }
+            })
+        }
+
+
+        function showOrder() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        let orders = response['orders'];
+                        for (let i = 0; i < orders.length; i++) {
+                            let order = orders[i];
+
+                            let name = order['name'];
+                            let count = order['count'];
+                            let address = order['address'];
+                            let phone = order['phone'];
+
+                            makeOrderinfo(name, count, address, phone);
+                        }
+                    }
+                }
+            })
+        }
+
+        function makeOrderinfo(name, count, address, phone) {
+            let tempHtml = `<td>${name}</td>
+                <td>${count}</td>
+                <td>${address}</td>
+                <td>${phone}</td>`;
+            $("#orderData").append(tempHtml);
+        }
+
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {},
+                success: function (response) {
+                    console.log(response);
+                    let usdrate = response[1]['rate'];
+                    let usd = `USD-KRW 환율: ${usdrate}`;
+                    $('#usdkrw').append(usd);
+                }
+            })
+        });
+
+        //--수량에 따른 가격 자동 계산 공식--//
+        function calculateAmount(val) {
+            let tot_price = val * 500000;
+            let divobj = document.getElementById('totalPrice');
+            divobj.value = tot_price;
+        }
+
+        //--숫자만 입력하도록 강제하는 공식 (전화번호) --//
+        var replaceNotInt = /[^0-9]/gi;
+        $(document).ready(function () {
+            $("#inputPhone").on("focusout", function () {
+                let x = $(this).val();
+                if (x.length > 0) {
+                    if (x.match(replaceNotInt)) {
+                        x = x.replace(replaceNotInt, "");
+                    }
+                    $(this).val(x);
+                }
+            }).on("keyup", function () {
+                $(this).val($(this).val().replace(replaceNotInt, ""));
+            });
+        });
+
+    </script>
+</head>
+<body>
+<div class="imagecenter">
+    <img class="image"
+         src="https://previews.123rf.com/images/snowturtle/snowturtle1003/snowturtle100300016/6618771-%ED%99%94%EC%9D%B4%ED%8A%B8-%EC%A0%88%EC%97%B0-%EB%85%B9%EC%83%89-%EC%9E%8E-%EC%A4%84%EA%B8%B0%EC%97%90-%EC%8B%A0%EC%84%A0%ED%95%9C-%EA%B7%A4.jpg">
+</div>
+<div class="center">
+    <h1 class="product_name"> 신귤
+        <a class="smalltext"> 가격: 500,000/개 </a>
+    </h1>
+    <p class="product_explain">
+        신귤은 주문이 들어오면 바로 신선나무에서 따서 보내드립니다.
+        이 신귤로 말할 것 같으면, 노인이 먹으면 불로장생하고 젊은이가 먹으면 변강쇠가 된답니다.
+        또한 혹자는 행운의 귤이라고 부르는데, 먹지 않고 갖고 있는 것만으로도 소원이 이루어진답니다.
+        선착순 5,000개! 개당 500,000원에 가져갈 수 있는 절호의 기회를 놓치지 마세요.
+    </p>
+</div>
+<div class="center">
+    * 현시각 환율 참고 *
+    <p id="usdkrw" class="redText boldFont"></p>
+</div>
+<div class="center">
+    <h3> 주문하기 </h3>
+    <div class="form-group row">
+        <label for="inputEmail" class="col-sm-3 col-form-label">주문자 성함:</label>
+        <div class="col-sm-9">
+            <input type="text" class="form-control" id="inputEmail">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="inputCount" class="col-sm-3 col-form-label">수량:</label>
+        <div class="col-sm-9">
+            <select name="tot_pin_requested" onchange="calculateAmount(this.value)" class="form-control" id="inputCount"
+                    required>
+                <option value="" disabled selected>--수량을 선택하세요--</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="inputCount" class="col-sm-3 col-form-label" onchange="calculateAmount(val)">가격 (KRW):</label>
+        <div class="col-sm-9">
+            <input type="text" class="form-control" id="totalPrice" placeholder="--자동입력됩니다--" readonly>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="inputAddress" class="col-sm-3 col-form-label">주소:</label>
+        <div class="col-sm-9">
+            <input type="text" class="form-control" id="inputAddress">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="inputPhone" class="col-sm-3 col-form-label">전화번호:</label>
+        <div class="col-sm-9">
+            <input type="text" class="form-control" id="inputPhone">
+        </div>
+    </div>
+    <p class="centeralign">
+        <button type="button" class="btn btn-outline-primary" onclick="blankAlert()"> 주문하기</button>
+    </p>
+</div>
+<div class="center">
+    <h3>주문자 목록</h3>
+    <table class="table table-hover center">
+        <thead class="blueText">
+        <tr>
+            <th scope="col">이름</th>
+            <th scope="col">수량</th>
+            <th scope="col">주소</th>
+            <th scope="col">전화번호</th>
+        </tr>
+        </thead>
+        <tbody id="orderData">
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
